@@ -1,0 +1,4 @@
+pytorch
+ase
+pymatgen
+
