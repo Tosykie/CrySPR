@@ -1,6 +1,6 @@
 """Local optimization (relaxation) by ML-IAPs through ASE API"""
 from packaging import version
-
+import os
 import ase
 if version.parse(ase.__version__) > version.parse("3.22.1"):
     from ase.constraints import FixSymmetry, FixAtoms
@@ -18,8 +18,7 @@ from ase.optimize.optimize import Optimizer
 from ase.optimize import FIRE, LBFGS, BFGSLineSearch
 from ase.io import read, write
 from ase.spacegroup import get_spacegroup
-# from pymatgen.core import Structure
-# from pymatgen.io.ase import AseAtomsAdaptor
+from pymatgen.io.ase import AseAtomsAdaptor
 from datetime import datetime
 
 def run_ase_relaxer(
@@ -41,7 +40,7 @@ def run_ase_relaxer(
     atoms.set_calculator(calculator)
     if fix_fractional:
         atoms.set_constraint([FixAtoms(indices=[atom.index for atom in atoms])])
-    spg0 = get_spacegroup(atoms, symprec=1e-5)
+    spg0 = get_spacegroup(atoms, symprec=1e-3)
     if fix_symmetry:
         atoms.set_constraint([FixSymmetry(atoms)])
     if cell_filter is not None:
@@ -51,9 +50,7 @@ def run_ase_relaxer(
     now = datetime.now()
     strnow = now.strftime("%Y-%b-%d %H:%M:%S")
     E0 = atoms.get_potential_energy()
-    with open(f"{wdir}/{logfile}", mode='at') as f:
-        f.write(
-            "\n".join([
+    logcontent1 = "\n".join([
                 f"Info: Start structure relaxation {strnow}",
                 f"Info: Total energy for initial input = {E0:12.5f} eV",
                 f"Info: Initial symmetry {spg0.symbol} ({spg0.no})",
@@ -62,9 +59,12 @@ def run_ase_relaxer(
                 f"Info: Relax atomic postions? {'Yes' if not fix_fractional else 'No'}",
                 f"#{'-'*42}#",
                 f"\n",
-            ]
-            )
-        )
+            ])
+    if logfile == "-":
+        print(logcontent1)
+    else:
+        with open(f"{wdir}/{logfile}", mode='at') as f:
+            f.write(logcontent1)
     opt = optimizer(atoms=target,
                     trajectory=f"{wdir}/{reduced_formula}_{full_formula}_opt.traj",
                     logfile=f"{wdir}/{logfile}",
@@ -85,9 +85,7 @@ def run_ase_relaxer(
     spg1 = get_spacegroup(atoms, symprec=1e-5)
     now = datetime.now()
     strnow = now.strftime("%Y-%b-%d %H:%M:%S")
-    with open(f"{wdir}/{logfile}", mode='at') as f:
-        f.write(
-            "\n".join([
+    logcontent2 = "\n".join([
                 f"#{'-' * 42}#",
                 f"Info: End structure relaxation {strnow}",
                 f"Info: Total energy for final structure = {E1:12.5f} eV",
@@ -98,7 +96,67 @@ def run_ase_relaxer(
                 f"\n",
             ]
             )
-        )
-
+    if logfile == "-":
+        print(logcontent2)
+    else:
+        with open(f"{wdir}/{logfile}", mode='at') as f:
+            f.write(logcontent2)
     return atoms
 
+def stepwise_relax(
+        atoms_in: Atoms,
+        calculator: Calculator,
+        optimizer: Optimizer = FIRE,
+        hydrostatic_strain: bool = False,
+        fmax: float = 0.02,
+        steps_limit: int = 500,
+        logfile_prefix: str = "",
+        logfile_postfix: str = "",
+        wdir: str = "./",
+) -> Atoms:
+        """Do fix-cell relaxation first then cell + atomic postions"""
+        if not os.path.exists(wdir):
+            os.makedirs(wdir)
+        atoms = atoms_in.copy()
+        full_formula = atoms.get_chemical_formula(mode="metal")
+        reduced_formula = atoms.get_chemical_formula(mode="metal", empirical=True)
+        structure0 = AseAtomsAdaptor.get_structure(atoms)
+        structure0.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_sym_0.cif', symprec=1e-3)
+
+        # fix cell relaxation
+        atoms1 = run_ase_relaxer(
+            atoms_in=atoms,
+            calculator=calculator,
+            optimizer=optimizer,
+            fix_symmetry=True,
+            cell_filter=None,
+            fix_fractional=False,
+            hydrostatic_strain=hydrostatic_strain,
+            fmax=fmax,
+            steps_limit=steps_limit,
+            logfile=f"/{logfile_prefix}fix-cell{logfile_postfix}.log",
+            wdir=wdir,
+        )
+
+        atoms = atoms1.copy()
+        structure1 = AseAtomsAdaptor.get_structure(atoms)
+        _ = structure1.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_fix-cell_sym.cif', symprec=1e-3)
+
+        # relax both cell and atomic positions
+        atoms2 = run_ase_relaxer(
+            atoms_in=atoms,
+            calculator=calculator,
+            optimizer=optimizer,
+            fix_symmetry=True,
+            cell_filter=CellFilter,
+            fix_fractional=False,
+            hydrostatic_strain=hydrostatic_strain,
+            fmax=fmax,
+            steps_limit=steps_limit,
+            logfile=f"/{logfile_prefix}cell+positions{logfile_postfix}.log",
+            wdir=wdir,
+        )
+        structure2 = AseAtomsAdaptor.get_structure(atoms2)
+        _ = structure2.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_free_sym.cif', symprec=1e-3)
+
+        return atoms2
