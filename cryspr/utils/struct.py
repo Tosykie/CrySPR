@@ -101,6 +101,7 @@ def get_structure_from_pyxtal(
             print(f"Error: An exception occurred:\n{e}")
         return pxstrc_with_Z
 
+#TO-DO: Added more utils
 def scale_volume(strc_in: Structure, target_volume: float):
     scaled_structure = strc_in.copy()
     scaled_structure.scale_lattice(target_volume)
