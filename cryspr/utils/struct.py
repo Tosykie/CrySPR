@@ -30,7 +30,7 @@ def get_structure_from_pyxtal(
 ) -> dict:
     # initially written by Ruiming (Raymond) Zhu, refined by Wei Nong
     # added compatibility and crystal system checking
-    global px_lattice
+
     spg_int_symbol = sg_symbol_from_int_number(space_group_number)
     space_group = SpaceGroup(spg_int_symbol)
     crystal_system = space_group.crystal_system
@@ -57,12 +57,16 @@ def get_structure_from_pyxtal(
     pxstrc_with_Z: dict = {}
     for Z in range(Z_start, Z_end+1):
         full_composition: Composition = composition_in.reduced_composition * Z
-        full_formula: str = full_composition.formula
+        full_formula: str = full_composition.formula.replace(" ", "")
         ions_and_numbers: dict = full_composition.get_el_amt_dict()
-        number_of_ions = list(ions_and_numbers.values())
-        wyckoff_sites: list = []
-        for element in ions_and_numbers.keys():
-            wyckoff_sites.append(element_wyckoff_sites[element])
+        number_of_ions = [int(f) for f in list(ions_and_numbers.values())]
+        species = list(ions_and_numbers.keys())
+        if element_wyckoff_sites is not None:
+            wyckoff_sites: list = []
+            for element in species:
+                wyckoff_sites.append(element_wyckoff_sites[element])
+        else:
+            wyckoff_sites = None
 
         # pyxtal crystal generation
         pxstrc = pyxtal()
@@ -70,14 +74,15 @@ def get_structure_from_pyxtal(
             pxstrc.from_random(
                 dim=3,
                 group=space_group_number,
-                species=full_formula,
-                lattice=None if lattice_parameters is not None else px_lattice,
+                species=species,
+                lattice=None if lattice_parameters is None else px_lattice,
                 sites=wyckoff_sites,
                 numIons=number_of_ions,
                 tm=inter_dist_matx,
+                max_count=20,
             )
-            cifname = "_".join([reduced_formula.replace(" ", ""),
-                                 full_formula.replace(" ", ""),
+            cifname = "_".join([reduced_formula_refined,
+                                 full_formula,
                                  f"{Z}fu",
                                  ]
                                 )
@@ -89,17 +94,19 @@ def get_structure_from_pyxtal(
                 "ase_Atoms": strc_ase,
             }
             DoF_total = pxstrc.get_dof()
-            DoF_lattice = px_lattice.get_dofs()
+            DoF_lattice = pxstrc.lattice.dof
             DoF_postions = DoF_total - DoF_lattice
             if verbose:
                 print(
                     f"Info: Successfully generated structure for {reduced_formula} with Z = {Z}\n",
-                    f"Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}",
+                    f"Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}\n",
                     f"Info: pyxtal representation\n{pxstrc}",
                 )
         except Exception as e:
-            print(f"Error: An exception occurred:\n{e}")
-        return pxstrc_with_Z
+            print(f"Error: Exception occurred:\n{e}")
+            continue
+
+    return pxstrc_with_Z
 
 #TO-DO: Added more utils
 def scale_volume(strc_in: Structure, target_volume: float):
