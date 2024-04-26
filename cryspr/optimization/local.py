@@ -21,6 +21,9 @@ from ase.spacegroup import get_spacegroup
 from pymatgen.io.ase import AseAtomsAdaptor
 from datetime import datetime
 
+def now():
+    return datetime.now().strftime("%Y-%b-%d %H:%M:%S")
+
 def run_ase_relaxer(
         atoms_in: Atoms,
         calculator: Calculator,
@@ -47,16 +50,15 @@ def run_ase_relaxer(
         target = cell_filter(atoms, hydrostatic_strain=hydrostatic_strain)
     else:
         target = atoms
-    now = datetime.now()
-    strnow = now.strftime("%Y-%b-%d %H:%M:%S")
+
     E0 = atoms.get_potential_energy()
     logcontent1 = "\n".join([
-                f"Info: Start structure relaxation {strnow}",
-                f"Info: Total energy for initial input = {E0:12.5f} eV",
-                f"Info: Initial symmetry {spg0.symbol} ({spg0.no})",
-                f"Info: Symmetry constraint? {'Yes' if fix_symmetry else 'No'}",
-                f"Info: Relax cell? {'Yes' if cell_filter is not None else 'No'}",
-                f"Info: Relax atomic postions? {'Yes' if not fix_fractional else 'No'}",
+                f"[{now()}] Info: Start structure relaxation.",
+                f"[{now()}] Info: Total energy for initial input = {E0:12.5f} eV",
+                f"[{now()}] Info: Initial symmetry {spg0.symbol} ({spg0.no})",
+                f"[{now()}] Info: Symmetry constraint? {'Yes' if fix_symmetry else 'No'}",
+                f"[{now()}] Info: Relax cell? {'Yes' if cell_filter is not None else 'No'}",
+                f"[{now()}] Info: Relax atomic postions? {'Yes' if not fix_fractional else 'No'}",
                 f"#{'-'*42}#",
                 f"\n",
             ])
@@ -83,13 +85,12 @@ def run_ase_relaxer(
     cell_diff = (atoms.cell.cellpar() / atoms_in.cell.cellpar() - 1.0) * 100
     E1 = atoms.get_potential_energy()
     spg1 = get_spacegroup(atoms, symprec=1e-5)
-    now = datetime.now()
-    strnow = now.strftime("%Y-%b-%d %H:%M:%S")
+
     logcontent2 = "\n".join([
                 f"#{'-' * 42}#",
-                f"Info: End structure relaxation {strnow}",
-                f"Info: Total energy for final structure = {E1:12.5f} eV",
-                f"Info: Final symmetry {spg1.symbol} ({spg1.no})",
+                f"[{now()}] Info: End structure relaxation.",
+                f"[{now()}] Info: Total energy for final structure = {E1:12.5f} eV",
+                f"[{now()}] Info: Final symmetry {spg1.symbol} ({spg1.no})",
                 f"Optimized Cell: {atoms.cell.cellpar()}",
                 f"Cell diff (%): {cell_diff}",
                 f"Scaled positions:\n{atoms.get_scaled_positions()}",
