@@ -10,7 +10,6 @@ from pyxtal.lattice import Lattice as PxLattice
 from pyxtal.tolerance import Tol_matrix
 from pymatgen.core.lattice import Lattice as PgLattice
 
-verbose = True
 def get_crystal_system_from_lattice(lattice: PgLattice):
     dummy_structure = [[0, 0, 0]]
     dummy_species = ["H"]
@@ -27,10 +26,17 @@ def get_structure_from_pyxtal(
         Z_end: int = 1,
         element_wyckoff_sites: dict[str, str] = None,
         inter_dist_matx: Tol_matrix = None,
+        max_try: int = 20,
+        verbose: bool = True,
+        logfile: str = "-",
+        write_cif: bool = True,
+        cif_prefix: str = "",
+        cif_posfix: str = "",
 ) -> dict:
     # initially written by Ruiming (Raymond) Zhu, refined by Wei Nong
     # added compatibility and crystal system checking
-    inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25) if lattice_parameters is None else None
+    if lattice_parameters is not None:
+        inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25)
     spg_int_symbol = sg_symbol_from_int_number(space_group_number)
     space_group = SpaceGroup(spg_int_symbol)
     crystal_system = space_group.crystal_system
@@ -41,8 +47,12 @@ def get_structure_from_pyxtal(
         pg_lattice = PgLattice.from_parameters(*lattice_parameters)
         ltype_para = get_crystal_system_from_lattice(pg_lattice)
         if ltype_para != ltype:
+            content = f"Error: Input lattice parameters are incompatible with the space group!\n"
             if verbose:
-                print(f"Error: Input lattice parameters are incompatible with the space group!")
+                print(content)
+            if logfile != "-":
+                with open(logfile, mode='at') as f:
+                    f.write(content)
             exit(code=7)
         px_lattice = PxLattice.from_para(*lattice_parameters, ltype=ltype)
 
@@ -50,10 +60,20 @@ def get_structure_from_pyxtal(
     composition_in = Composition(reduced_formula)
     reduced_formula_refined, Z_in_reduced_formula = composition_in.get_reduced_formula_and_factor()
     if Z_in_reduced_formula > 1:
+        content = "\n".join(
+            [
+                f"Warning: Input chemical formula {reduced_formula} is not reduced.",
+                f"Warning: Reduced formula {reduced_formula_refined} will be used instead.",
+                f"\n",
+            ]
+        )
         if verbose:
-            print(f"Warning: Input chemical formula {reduced_formula} is not reduced.\n",
-                  f"Warning: Reduced formula {reduced_formula_refined} will be used instead.")
+            print(content)
+        if logfile != "-":
+            with open(logfile, mode='at') as f:
+                f.write(content)
 
+    # dict with Z as the key
     pxstrc_with_Z: dict = {}
     for Z in range(Z_start, Z_end+1):
         full_composition: Composition = composition_in.reduced_composition * Z
@@ -79,14 +99,15 @@ def get_structure_from_pyxtal(
                 sites=wyckoff_sites,
                 numIons=number_of_ions,
                 tm=inter_dist_matx,
-                max_count=20,
+                max_count=max_try,
             )
             cifname = "_".join([reduced_formula_refined,
                                  full_formula,
                                  f"{Z}fu",
                                  ]
                                 )
-            pxstrc.to_file(filename=cifname + ".cif")
+            if write_cif:
+                pxstrc.to_file(filename=cif_prefix + cifname + cif_posfix + ".cif")
             strc_ase = pxstrc.to_ase()
             pxstrc_with_Z[Z] = {
                 "full_formula": full_formula,
@@ -96,20 +117,34 @@ def get_structure_from_pyxtal(
             DoF_total = pxstrc.get_dof()
             DoF_lattice = pxstrc.lattice.dof
             DoF_postions = DoF_total - DoF_lattice
+
+            content = "\n".join(
+                [
+                    f"Info: Successfully generated structure for {reduced_formula} with Z = {Z}",
+                    f"Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}",
+                    f"Info: pyxtal representation:\n{pxstrc}",
+                    f"\n"
+                ]
+            )
             if verbose:
-                print(
-                    f"Info: Successfully generated structure for {reduced_formula} with Z = {Z}\n",
-                    f"Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}\n",
-                    f"Info: pyxtal representation\n{pxstrc}",
-                )
+                print(content)
+            if logfile != "-":
+                with open(logfile, mode='at') as f:
+                    f.write(content)
+
         except Exception as e:
-            print(f"Error: Exception occurred:\n{e}")
+            content = f"Error: Exception occurred:\n{e}"
+            if verbose:
+                print(content)
+            if logfile != "-":
+                with open(logfile, mode='at') as f:
+                    f.write(content)
             continue
 
     return pxstrc_with_Z
 
 #TO-DO: Added more utils
-def scale_volume(strc_in: Structure, target_volume: float):
+def scale_volume(strc_in: Structure, target_volume: float, verbose: bool = True):
     scaled_structure = strc_in.copy()
     scaled_structure.scale_lattice(target_volume)
     if verbose:
