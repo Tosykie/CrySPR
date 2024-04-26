@@ -21,16 +21,16 @@ def get_crystal_system_from_lattice(lattice: PgLattice):
 
 def get_structure_from_pyxtal(
         reduced_formula: str,
-        space_group_number,
+        space_group_number: int,
         lattice_parameters: list[float, float, float, float, float, float] = None,
         Z_start: int = 1,
         Z_end: int = 1,
         element_wyckoff_sites: dict[str, str] = None,
-        inter_dist_matx: Tol_matrix = Tol_matrix(prototype="atomic", factor=1.25),
+        inter_dist_matx: Tol_matrix = None,
 ) -> dict:
     # initially written by Ruiming (Raymond) Zhu, refined by Wei Nong
     # added compatibility and crystal system checking
-
+    inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25) if lattice_parameters is None else None
     spg_int_symbol = sg_symbol_from_int_number(space_group_number)
     space_group = SpaceGroup(spg_int_symbol)
     crystal_system = space_group.crystal_system
