@@ -9,6 +9,9 @@ from pyxtal import pyxtal
 from pyxtal.lattice import Lattice as PxLattice
 from pyxtal.tolerance import Tol_matrix
 from pymatgen.core.lattice import Lattice as PgLattice
+from datetime import datetime
+def now():
+    return datetime.now().strftime("%Y-%b-%d %H:%M:%S")
 
 def get_crystal_system_from_lattice(lattice: PgLattice):
     dummy_structure = [[0, 0, 0]]
@@ -37,6 +40,13 @@ def get_structure_from_pyxtal(
     # added compatibility and crystal system checking
     if lattice_parameters is not None:
         inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25)
+    else:
+        content = f"[{now()}] Warning: Ignore the default inter-atomic distance matrix, use instead input lattice parameters.\n"
+        if verbose:
+            print(content)
+        if logfile != "-":
+            with open(logfile, mode='at') as f:
+                f.write(content)
     spg_int_symbol = sg_symbol_from_int_number(space_group_number)
     space_group = SpaceGroup(spg_int_symbol)
     crystal_system = space_group.crystal_system
@@ -46,15 +56,17 @@ def get_structure_from_pyxtal(
     if lattice_parameters is not None:
         pg_lattice = PgLattice.from_parameters(*lattice_parameters)
         ltype_para = get_crystal_system_from_lattice(pg_lattice)
-        if ltype_para != ltype:
-            content = f"Error: Input lattice parameters are incompatible with the space group!\n"
+        if ltype_para.lower() != ltype.lower():
+            content = (f"[{now()}] Error: Lattice type with parameters {lattice_parameters} ({ltype_para})"
+                       f" is incompatible with the space group {ltype}!\n")
             if verbose:
                 print(content)
             if logfile != "-":
                 with open(logfile, mode='at') as f:
                     f.write(content)
             exit(code=7)
-        px_lattice = PxLattice.from_para(*lattice_parameters, ltype=ltype)
+        else:
+            px_lattice = PxLattice.from_para(*lattice_parameters, ltype=ltype)
 
     # formulae enumeration
     composition_in = Composition(reduced_formula)
@@ -62,8 +74,8 @@ def get_structure_from_pyxtal(
     if Z_in_reduced_formula > 1:
         content = "\n".join(
             [
-                f"Warning: Input chemical formula {reduced_formula} is not reduced.",
-                f"Warning: Reduced formula {reduced_formula_refined} will be used instead.",
+                f"[{now()}] Warning: Input chemical formula {reduced_formula} is not reduced.",
+                f"[{now()}] Warning: Reduced formula {reduced_formula_refined} will be used instead.",
                 f"\n",
             ]
         )
@@ -121,9 +133,9 @@ def get_structure_from_pyxtal(
 
             content = "\n".join(
                 [
-                    f"Info: Successfully generated structure for {reduced_formula} with Z = {Z}",
-                    f"Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}",
-                    f"Info: pyxtal representation:\n{pxstrc}",
+                    f"[{now()}] Info: Successfully generated structure for {reduced_formula} with Z = {Z}",
+                    f"[{now()}] Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}",
+                    f"[{now()}] Info: pyxtal representation:\n{pxstrc}",
                     f"\n"
                 ]
             )
@@ -134,7 +146,7 @@ def get_structure_from_pyxtal(
                     f.write(content)
 
         except Exception as e:
-            content = f"Error: Exception occurred:\n{e}"
+            content = f"[{now()}] Error: Exception occurred:\n{e}\n"
             if verbose:
                 print(content)
             if logfile != "-":
@@ -149,6 +161,6 @@ def scale_volume(strc_in: Structure, target_volume: float, verbose: bool = True)
     scaled_structure = strc_in.copy()
     scaled_structure.scale_lattice(target_volume)
     if verbose:
-        print(f"Info: Volume scaled from {strc_in.volume:.4f} to {scaled_structure.volume:.4f} A^3\n")
+        print(f"[{now()}] Info: Volume scaled from {strc_in.volume:.4f} to {scaled_structure.volume:.4f} A^3\n")
     return scaled_structure
 
