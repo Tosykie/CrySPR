@@ -59,7 +59,7 @@ def run_ase_relaxer(
                 f"[{now()}] Info: Symmetry constraint? {'Yes' if fix_symmetry else 'No'}",
                 f"[{now()}] Info: Relax cell? {'Yes' if cell_filter is not None else 'No'}",
                 f"[{now()}] Info: Relax atomic postions? {'Yes' if not fix_fractional else 'No'}",
-                f"#{'-'*42}#",
+                f"#{'-'*60}#",
                 f"\n",
             ])
     if logfile == "-":
@@ -87,7 +87,7 @@ def run_ase_relaxer(
     spg1 = get_spacegroup(atoms, symprec=1e-5)
 
     logcontent2 = "\n".join([
-                f"#{'-' * 42}#",
+                f"#{'-' * 60}#",
                 f"[{now()}] Info: End structure relaxation.",
                 f"[{now()}] Info: Total energy for final structure = {E1:12.5f} eV",
                 f"[{now()}] Info: Final symmetry {spg1.symbol} ({spg1.no})",
