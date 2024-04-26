@@ -107,7 +107,8 @@ def get_structure_from_pyxtal(
                                  ]
                                 )
             if write_cif:
-                pxstrc.to_file(filename=cif_prefix + cifname + cif_posfix + ".cif")
+                ciffile = "_".join([cif_prefix, cifname, cif_posfix]) + ".cif"
+                pxstrc.to_file(filename= ciffile)
             strc_ase = pxstrc.to_ase()
             pxstrc_with_Z[Z] = {
                 "full_formula": full_formula,
