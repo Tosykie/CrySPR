@@ -41,7 +41,10 @@ def get_structure_from_pyxtal(
     if lattice_parameters is None:
         inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25)
     else:
-        content = f"[{now()}] Warning: Ignore the default inter-atomic distance matrix, use instead input lattice parameters.\n"
+        content = (f"[{now()}] Warning: Ignore the default inter-atomic distance matrix,"
+                   f" use instead input lattice parameters.\n"
+                   f"[{now()}] Warning: The input lattice parameters might not be compatible with Z range:"
+                   f" from {Z_start} to {Z_end}. You should always check ...")
         if verbose:
             print(content)
         if logfile != "-":
