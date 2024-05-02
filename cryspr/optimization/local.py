@@ -19,10 +19,7 @@ from ase.optimize import FIRE, LBFGS, BFGSLineSearch
 from ase.io import read, write
 from ase.spacegroup import get_spacegroup
 from pymatgen.io.ase import AseAtomsAdaptor
-from datetime import datetime
-
-def now():
-    return datetime.now().strftime("%Y-%b-%d %H:%M:%S")
+from ..utils.log import now
 
 def run_ase_relaxer(
         atoms_in: Atoms,

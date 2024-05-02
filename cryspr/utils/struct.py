@@ -9,10 +9,7 @@ from pyxtal import pyxtal
 from pyxtal.lattice import Lattice as PxLattice
 from pyxtal.tolerance import Tol_matrix
 from pymatgen.core.lattice import Lattice as PgLattice
-from datetime import datetime
-def now():
-    return datetime.now().strftime("%Y-%b-%d %H:%M:%S")
-
+from .log import now
 def get_crystal_system_from_lattice(lattice: PgLattice):
     dummy_postion = [[0, 0, 0]]
     dummy_species = ["H"]
