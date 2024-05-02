@@ -27,7 +27,6 @@ def get_structure_from_pyxtal(
         lattice_parameters: list[float, float, float, float, float, float] = None,
         Z_start: int = 1,
         Z_end: int = 1,
-        element_wyckoff_sites: dict[str, dict] = None,
         inter_dist_matx: Tol_matrix = None,
         random_seed = None,
         max_try: int = 20,
@@ -94,12 +93,6 @@ def get_structure_from_pyxtal(
         ions_and_numbers: dict = full_composition.get_el_amt_dict()
         number_of_ions = [int(f) for f in list(ions_and_numbers.values())]
         species = list(ions_and_numbers.keys())
-        if element_wyckoff_sites is not None:
-            wyckoff_sites: list = []
-            for element in species:
-                wyckoff_sites.append(element_wyckoff_sites[element])
-        else:
-            wyckoff_sites = None
 
         # pyxtal crystal generation
         pxstrc = pyxtal()
@@ -109,7 +102,7 @@ def get_structure_from_pyxtal(
                 group=space_group_number,
                 species=species,
                 lattice=None if lattice_parameters is None else px_lattice,
-                sites=wyckoff_sites,
+                sites=None,
                 numIons=number_of_ions,
                 tm=inter_dist_matx,
                 max_count=max_try,
