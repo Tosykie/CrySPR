@@ -138,6 +138,7 @@ def stepwise_relax(
     structure0.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_0_initial_symmetrized.cif', symprec=1e-3)
 
     # fix cell relaxation
+    logfile1 = "_".join([logfile_prefix,  "fix-cell", logfile_postfix, ]).strip("_") + ".log"
     atoms1 = run_ase_relaxer(
         atoms_in=atoms,
         calculator=calculator,
@@ -148,7 +149,7 @@ def stepwise_relax(
         hydrostatic_strain=hydrostatic_strain,
         fmax=fmax,
         steps_limit=steps_limit,
-        logfile=f"/{logfile_prefix}fix-cell{logfile_postfix}.log",
+        logfile=logfile1,
         wdir=wdir,
     )
 
@@ -157,6 +158,7 @@ def stepwise_relax(
     _ = structure1.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_1_fix-cell_symmetrized.cif', symprec=1e-3)
 
     # relax both cell and atomic positions
+    logfile2 = "_".join([logfile_prefix, "cell+positions", logfile_postfix, ]).strip("_") + ".log"
     atoms2 = run_ase_relaxer(
         atoms_in=atoms,
         calculator=calculator,
@@ -167,7 +169,7 @@ def stepwise_relax(
         hydrostatic_strain=hydrostatic_strain,
         fmax=fmax,
         steps_limit=steps_limit,
-        logfile=f"/{logfile_prefix}cell+positions{logfile_postfix}.log",
+        logfile=logfile2,
         wdir=wdir,
     )
     structure2 = AseAtomsAdaptor.get_structure(atoms2)
