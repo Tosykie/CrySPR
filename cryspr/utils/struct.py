@@ -119,7 +119,7 @@ def get_structure_from_pyxtal(
                                  ]
                                 )
             if write_cif:
-                ciffile = "_".join([cif_prefix, cifname, cif_posfix]) + ".cif"
+                ciffile = "_".join([cif_prefix, cifname, cif_posfix]).strip("_") + ".cif"
                 pxstrc.to_file(filename= ciffile)
             strc_ase = pxstrc.to_ase()
             pxstrc_with_Z[Z] = {
