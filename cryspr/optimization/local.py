@@ -135,7 +135,7 @@ def stepwise_relax(
     full_formula = atoms.get_chemical_formula(mode="metal")
     reduced_formula = atoms.get_chemical_formula(mode="metal", empirical=True)
     structure0 = AseAtomsAdaptor.get_structure(atoms)
-    structure0.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_sym_0.cif', symprec=1e-3)
+    structure0.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_0_initial_symmetrized.cif', symprec=1e-3)
 
     # fix cell relaxation
     atoms1 = run_ase_relaxer(
@@ -154,7 +154,7 @@ def stepwise_relax(
 
     atoms = atoms1.copy()
     structure1 = AseAtomsAdaptor.get_structure(atoms)
-    _ = structure1.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_fix-cell_sym.cif', symprec=1e-3)
+    _ = structure1.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_1_fix-cell_symmetrized.cif', symprec=1e-3)
 
     # relax both cell and atomic positions
     atoms2 = run_ase_relaxer(
@@ -171,6 +171,6 @@ def stepwise_relax(
         wdir=wdir,
     )
     structure2 = AseAtomsAdaptor.get_structure(atoms2)
-    _ = structure2.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_free_sym.cif', symprec=1e-3)
+    _ = structure2.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_2_cell+pos_symmetrized.cif', symprec=1e-3)
 
     return atoms2
