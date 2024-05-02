@@ -38,7 +38,7 @@ def get_structure_from_pyxtal(
 ) -> dict:
     # initially written by Ruiming (Raymond) Zhu, refined by Wei Nong
     # added compatibility and crystal system checking
-    if lattice_parameters is not None:
+    if lattice_parameters is None:
         inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25)
     else:
         content = f"[{now()}] Warning: Ignore the default inter-atomic distance matrix, use instead input lattice parameters.\n"
