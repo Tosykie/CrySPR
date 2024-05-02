@@ -29,6 +29,7 @@ def get_structure_from_pyxtal(
         Z_end: int = 1,
         element_wyckoff_sites: dict[str, str] = None,
         inter_dist_matx: Tol_matrix = None,
+        random_seed = None,
         max_try: int = 20,
         verbose: bool = True,
         logfile: str = "-",
@@ -112,6 +113,7 @@ def get_structure_from_pyxtal(
                 numIons=number_of_ions,
                 tm=inter_dist_matx,
                 max_count=max_try,
+                seed=random_seed,
             )
             cifname = "_".join([reduced_formula_refined,
                                  full_formula,
