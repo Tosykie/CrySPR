@@ -23,7 +23,7 @@ def search_by_pso(*args, **kwargs):
     population = 80
     max_pso_step = 200
     pso = PSO(func=local_energy,
-              n_dim=len(lb),
+              n_dim=5, # the dimension of search space (as defined in the boundary)
               pop=population,
               max_iter=max_pso_step,
               lb=None,
