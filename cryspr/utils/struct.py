@@ -27,7 +27,7 @@ def get_structure_from_pyxtal(
         lattice_parameters: list[float, float, float, float, float, float] = None,
         Z_start: int = 1,
         Z_end: int = 1,
-        element_wyckoff_sites: dict[str, str] = None,
+        element_wyckoff_sites: dict[str, dict] = None,
         inter_dist_matx: Tol_matrix = None,
         random_seed = None,
         max_try: int = 20,
