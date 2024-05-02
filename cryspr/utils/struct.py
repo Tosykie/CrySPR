@@ -14,9 +14,9 @@ def now():
     return datetime.now().strftime("%Y-%b-%d %H:%M:%S")
 
 def get_crystal_system_from_lattice(lattice: PgLattice):
-    dummy_structure = [[0, 0, 0]]
+    dummy_postion = [[0, 0, 0]]
     dummy_species = ["H"]
-    structure = Structure(lattice, dummy_species, dummy_structure)
+    structure = Structure(lattice, dummy_species, dummy_postion)
     analyzer = SpacegroupAnalyzer(structure)
     crystal_system = analyzer.get_crystal_system()
     return crystal_system
