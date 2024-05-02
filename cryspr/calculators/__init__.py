@@ -1,6 +1,10 @@
 """Include calculators"""
+from packaging import version
 import matgl
-from matgl.ext.ase import PESCalculator
+if version.parse(matgl.__version__) > version.parse("1.0.0"):
+    from matgl.ext.ase import PESCalculator
+else:
+    from matgl.ext.ase import M3GNetCalculator as PESCalculator
 from matgl.apps.pes import Potential
 
 from mace.calculators import mace_mp as MACEMPCalculator
