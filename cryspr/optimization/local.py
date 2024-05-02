@@ -115,49 +115,62 @@ def stepwise_relax(
         logfile_postfix: str = "",
         wdir: str = "./",
 ) -> Atoms:
-        """Do fix-cell relaxation first then cell + atomic postions"""
-        if not os.path.exists(wdir):
-            os.makedirs(wdir)
-        atoms = atoms_in.copy()
-        full_formula = atoms.get_chemical_formula(mode="metal")
-        reduced_formula = atoms.get_chemical_formula(mode="metal", empirical=True)
-        structure0 = AseAtomsAdaptor.get_structure(atoms)
-        structure0.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_sym_0.cif', symprec=1e-3)
+    """
+    Do fix-cell relaxation first then cell + atomic postions.
+    :param atoms_in: an input ase.Atoms object
+    :param calculator: an ase calculator to be used
+    :param optimizer: a local optimization algorithm, default FIRE
+    :param hydrostatic_strain: if do isometrically cell-scaled relaxation, default True
+    :param fmax: the max force per atom (unit as defined by the calculator), default 0.02
+    :param steps_limit: the max steps to break the relaxation loop, default 500
+    :param logfile_prefix: a prefix of the log file, default ""
+    :param logfile_postfix: a postfix of the log file, default ""
+    :param wdir: string of working directory, default "./" (current)
+    :return: the last ase.Atoms trajectory
+    """
 
-        # fix cell relaxation
-        atoms1 = run_ase_relaxer(
-            atoms_in=atoms,
-            calculator=calculator,
-            optimizer=optimizer,
-            fix_symmetry=True,
-            cell_filter=None,
-            fix_fractional=False,
-            hydrostatic_strain=hydrostatic_strain,
-            fmax=fmax,
-            steps_limit=steps_limit,
-            logfile=f"/{logfile_prefix}fix-cell{logfile_postfix}.log",
-            wdir=wdir,
-        )
+    if not os.path.exists(wdir):
+        os.makedirs(wdir)
+    atoms = atoms_in.copy()
+    full_formula = atoms.get_chemical_formula(mode="metal")
+    reduced_formula = atoms.get_chemical_formula(mode="metal", empirical=True)
+    structure0 = AseAtomsAdaptor.get_structure(atoms)
+    structure0.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_sym_0.cif', symprec=1e-3)
 
-        atoms = atoms1.copy()
-        structure1 = AseAtomsAdaptor.get_structure(atoms)
-        _ = structure1.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_fix-cell_sym.cif', symprec=1e-3)
+    # fix cell relaxation
+    atoms1 = run_ase_relaxer(
+        atoms_in=atoms,
+        calculator=calculator,
+        optimizer=optimizer,
+        fix_symmetry=True,
+        cell_filter=None,
+        fix_fractional=False,
+        hydrostatic_strain=hydrostatic_strain,
+        fmax=fmax,
+        steps_limit=steps_limit,
+        logfile=f"/{logfile_prefix}fix-cell{logfile_postfix}.log",
+        wdir=wdir,
+    )
 
-        # relax both cell and atomic positions
-        atoms2 = run_ase_relaxer(
-            atoms_in=atoms,
-            calculator=calculator,
-            optimizer=optimizer,
-            fix_symmetry=True,
-            cell_filter=CellFilter,
-            fix_fractional=False,
-            hydrostatic_strain=hydrostatic_strain,
-            fmax=fmax,
-            steps_limit=steps_limit,
-            logfile=f"/{logfile_prefix}cell+positions{logfile_postfix}.log",
-            wdir=wdir,
-        )
-        structure2 = AseAtomsAdaptor.get_structure(atoms2)
-        _ = structure2.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_free_sym.cif', symprec=1e-3)
+    atoms = atoms1.copy()
+    structure1 = AseAtomsAdaptor.get_structure(atoms)
+    _ = structure1.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_fix-cell_sym.cif', symprec=1e-3)
 
-        return atoms2
+    # relax both cell and atomic positions
+    atoms2 = run_ase_relaxer(
+        atoms_in=atoms,
+        calculator=calculator,
+        optimizer=optimizer,
+        fix_symmetry=True,
+        cell_filter=CellFilter,
+        fix_fractional=False,
+        hydrostatic_strain=hydrostatic_strain,
+        fmax=fmax,
+        steps_limit=steps_limit,
+        logfile=f"/{logfile_prefix}cell+positions{logfile_postfix}.log",
+        wdir=wdir,
+    )
+    structure2 = AseAtomsAdaptor.get_structure(atoms2)
+    _ = structure2.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_free_sym.cif', symprec=1e-3)
+
+    return atoms2
