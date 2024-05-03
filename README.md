@@ -4,7 +4,7 @@ CrySPR /ˈkrɪspɚ/ is a Python interface for crystal structure pre-relaxation a
 
 - Structure generation (pyxtal) from the input info (e.g., formula, Z, space group, etc.)  and local (optimization) relaxation (ase, ML-IAPs)
 
-- Implement global search task for crystal structure prediction using particle swarm optimization (PSO) foe a given reduced formula
+- Implement global search task for crystal structure prediction using particle swarm optimization (PSO) foe a given reduced formula (in dev ...)
 
 - More in development
 
