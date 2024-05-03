@@ -1,5 +1,6 @@
 """Utilities for generating, manipulating structure object"""
 
+import sys
 from pymatgen.core import Structure
 from pymatgen.core.composition import Composition
 from pymatgen.symmetry.groups import SpaceGroup
@@ -64,7 +65,7 @@ def get_structure_from_pyxtal(
             if logfile != "-":
                 with open(logfile, mode='at') as f:
                     f.write(content)
-            exit(code=7)
+            sys.exit(7)
         else:
             px_lattice = PxLattice.from_para(*lattice_parameters, ltype=ltype)
 
