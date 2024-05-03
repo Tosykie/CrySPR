@@ -38,9 +38,9 @@ def get_structure_from_pyxtal(
     if lattice_parameters is None:
         inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25)
     else:
-        content = (f"[{now()}] Warning: Ignore the default inter-atomic distance matrix,"
+        content = (f"[{now()}] CrySPR Warning: Ignore the default inter-atomic distance matrix,"
                    f" use instead input lattice parameters.\n"
-                   f"[{now()}] Warning: The input lattice parameters might not be compatible with Z range:"
+                   f"[{now()}] CrySPR Warning: The input lattice parameters might not be compatible with Z range:"
                    f" from {Z_start} to {Z_end}. You should always check ...")
         if verbose:
             print(content)
@@ -57,7 +57,7 @@ def get_structure_from_pyxtal(
         pg_lattice = PgLattice.from_parameters(*lattice_parameters)
         ltype_para = get_crystal_system_from_lattice(pg_lattice)
         if ltype_para.lower() != ltype.lower():
-            content = (f"[{now()}] Error: Lattice type with parameters {lattice_parameters} ({ltype_para})"
+            content = (f"[{now()}] CrySPR Error: Lattice type with parameters {lattice_parameters} ({ltype_para})"
                        f" is incompatible with the space group {ltype}!\n")
             if verbose:
                 print(content)
@@ -74,8 +74,8 @@ def get_structure_from_pyxtal(
     if Z_in_reduced_formula > 1:
         content = "\n".join(
             [
-                f"[{now()}] Warning: Input chemical formula {reduced_formula} is not reduced.",
-                f"[{now()}] Warning: Reduced formula {reduced_formula_refined} will be used instead.",
+                f"[{now()}] CrySPR Warning: Input chemical formula {reduced_formula} is not reduced.",
+                f"[{now()}] CrySPR Warning: Reduced formula {reduced_formula_refined} will be used instead.",
                 f"\n",
             ]
         )
@@ -128,9 +128,9 @@ def get_structure_from_pyxtal(
 
             content = "\n".join(
                 [
-                    f"[{now()}] Info: Successfully generated structure for {reduced_formula} with Z = {Z}",
-                    f"[{now()}] Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}",
-                    f"[{now()}] Info: pyxtal representation:\n{pxstrc}",
+                    f"[{now()}] CrySPR Info: Successfully generated structure for {reduced_formula} with Z = {Z}",
+                    f"[{now()}] CrySPR Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}",
+                    f"[{now()}] CrySPR Info: pyxtal representation:\n{pxstrc}",
                     f"\n"
                 ]
             )
@@ -141,7 +141,7 @@ def get_structure_from_pyxtal(
                     f.write(content)
 
         except Exception as e:
-            content = f"[{now()}] Error: Exception occurred:\n{e}\n"
+            content = f"[{now()}] CrySPR Error: Pyxtal exception occurred:\n{e}\n"
             if verbose:
                 print(content)
             if logfile != "-":
@@ -156,6 +156,6 @@ def scale_volume(strc_in: Structure, target_volume: float, verbose: bool = True)
     scaled_structure = strc_in.copy()
     scaled_structure.scale_lattice(target_volume)
     if verbose:
-        print(f"[{now()}] Info: Volume scaled from {strc_in.volume:.4f} to {scaled_structure.volume:.4f} A^3\n")
+        print(f"[{now()}] CrySPR Info: Volume scaled from {strc_in.volume:.4f} to {scaled_structure.volume:.4f} A^3\n")
     return scaled_structure
 
