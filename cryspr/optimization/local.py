@@ -1,4 +1,6 @@
 """Local optimization (relaxation) by ML-IAPs through ASE API"""
+import sys
+
 from packaging import version
 import os
 import ase
@@ -186,7 +188,7 @@ def stepwise_relax(
 
     return atoms2
 
-def structure_from_one_formula_one_spg(
+def one_structure_from_one_formula_one_spg(
         full_formula: str,
         space_group_number: int,
         lattice_parameters: list[float, float, float, float, float, float] = None,
@@ -194,13 +196,15 @@ def structure_from_one_formula_one_spg(
         random_seed = None,
         max_try: int = 20,
         verbose: bool = True,
+        wdir="./",
         logfile: str = "-",
         write_cif: bool = False,
         cif_prefix: str = "",
         cif_posfix: str = "",
 ) -> dict:
     """Relax and get the total energy for single formula with one specific space group"""
-
+    if not os.path.exists(wdir):
+        os.makedirs(wdir)
     if lattice_parameters is None:
         inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25)
     else:
@@ -228,7 +232,7 @@ def structure_from_one_formula_one_spg(
             if logfile != "-":
                 with open(logfile, mode='at') as f:
                     f.write(content)
-            exit(code=7)
+            sys.exit(7)
         else:
             px_lattice = PxLattice.from_para(*lattice_parameters, ltype=ltype)
 
@@ -261,7 +265,7 @@ def structure_from_one_formula_one_spg(
                            )
         if write_cif:
             ciffile = "_".join([cif_prefix, cifname, cif_posfix]).strip("_") + ".cif"
-            pxstrc.to_file(filename= ciffile)
+            pxstrc.to_file(filename= f"{wdir}/{ciffile}")
         strc_ase = pxstrc.to_ase()
         pxstrc_dict = {
             "full_formula": full_formula,
@@ -285,7 +289,7 @@ def structure_from_one_formula_one_spg(
         if logfile != "-":
             with open(logfile, mode='at') as f:
                 f.write(content)
-
+        return pxstrc_dict
     except Exception as e:
         content = f"[{now()}] CrySPR Error: Pyxtal exception occurred:\n{e}\n"
         if verbose:
@@ -293,5 +297,4 @@ def structure_from_one_formula_one_spg(
         if logfile != "-":
             with open(logfile, mode='at') as f:
                 f.write(content)
-
-    return pxstrc_dict
+        return None
