@@ -187,3 +187,5 @@ def random_predict(
     if logfile != "-":
         with open(logfile, mode='at') as f:
             f.write(content)
+
+    return reservoir
