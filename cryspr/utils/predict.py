@@ -1,6 +1,6 @@
 """Utilities for crystal structure prediction"""
-import sys
-from ..optimization.local import structure_from_one_formula_one_spg
+import sys, os
+from ..optimization.local import one_structure_from_one_formula_one_spg
 from ..optimization.local import stepwise_relax
 from ..calculators import *
 from .log import now
@@ -26,8 +26,8 @@ def random_predict(
         verbose: bool = True,
         wdir: str = "./",
         logfile: str = "-",
-        logfile_prefix: str = "",
-        logfile_postfix: str = "",
+        relax_logfile_prefix: str = "",
+        relax_logfile_postfix: str = "",
         write_cif: bool = True,
         cif_prefix: str = "",
         cif_posfix: str = "",
@@ -72,7 +72,7 @@ def random_predict(
     compatible_spg_with_Z = {}  # {Z: [full_formula, [spgs]]}
 
     if space_group_numbers == 0:
-        spg_list = list(range(1,231))
+        spg_list = list(range(1, 231))
     else:
         spg_list = space_group_numbers
 
@@ -87,10 +87,10 @@ def random_predict(
         compatible_spg = []
         for spg_num in spg_list:
             spg = Group(group=spg_num)
-            if spg.check_compatible(numIons=number_of_ions,):
+            compatible_wyckoff_combinations: list = spg.list_wyckoff_combinations(number_of_ions)[0]
+            if len(compatible_wyckoff_combinations) > 0:
                 compatible_spg.append(spg_num)
                 # log
-                compatible_wyckoff_combinations: list= spg.list_wyckoff_combinations()[0]
                 number_of_solutions = len(compatible_wyckoff_combinations)
                 content = "\n".join(
                     [
@@ -143,21 +143,35 @@ def random_predict(
     for Z in reservoir.keys():
         full_formula_in: str = reservoir[Z][0]
         spgs: list = reservoir[Z][1]
-
         trial_structure_for_each_formula = {}
-        trial_structure_for_each_spg = []
+
         for spg in spgs:
-            count = 0
+            count = 1
+            trial_structure_for_each_spg = []
             while count <= n_trial_each_space_group:
-                output = structure_from_one_formula_one_spg(
+                output = one_structure_from_one_formula_one_spg(
                     full_formula=full_formula_in,
                     space_group_number=spg,
                     random_seed=None,
+                    wdir=f"{wdir}/{Z}fu/spg{spg}/trial{count}",
                     logfile=logfile,
                     write_cif=write_cif,
                     cif_prefix=cif_prefix,
                     cif_posfix=cif_posfix,
                 )
+                # log
+                content = "\n".join(
+                    [
+                        f"[{now()}] CrySPR Info: Done structure generation: trial {count}.",
+                        f"\n",
+                    ]
+                )
+                if verbose:
+                    print(content)
+                if logfile != "-":
+                    with open(logfile, mode='at') as f:
+                        f.write(content)
+
                 candidate: Atoms = output["ase_Atoms"]
                 # relax the candidate
                 atoms_relaxd: Atoms = stepwise_relax(
@@ -165,11 +179,24 @@ def random_predict(
                     calculator=relax_calculator,
                     optimizer=optimizer,
                     fmax=fmax,
-                    wdir=wdir,
-                    logfile_prefix=logfile_prefix,
-                    logfile_postfix=logfile_postfix,
+                    wdir=f"{wdir}/{Z}fu/spg{spg}/trial{count}",
+                    logfile_prefix=relax_logfile_prefix,
+                    logfile_postfix=relax_logfile_postfix,
                 )
                 trial_structure_for_each_spg.append(atoms_relaxd)
+
+                # log
+                content = "\n".join(
+                    [
+                        f"[{now()}] CrySPR Info: Done structure relaxation: trial {count}.",
+                        f"\n",
+                    ]
+                )
+                if verbose:
+                    print(content)
+                if logfile != "-":
+                    with open(logfile, mode='at') as f:
+                        f.write(content)
                 count += 1
             trial_structure_for_each_formula[spg] = trial_structure_for_each_spg
 
