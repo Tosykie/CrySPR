@@ -20,10 +20,16 @@ class M3GNetCalculator(PESCalculator):
     """
     def __init__(
         self,
-        potential: Potential = matgl.load_model("M3GNet-MP-2021.2.8-PES"),
+        potential: Potential = None,
         stress_weight: float = 1 / 160.21766208,
+        device = "cpu",
         **kwargs,
     ):
+        if potential is None:
+            import torch
+            torch.set_default_device(device)
+            potential = matgl.load_model("M3GNet-MP-2021.2.8-PES")
+
         super().__init__(potential=potential, stress_weight=stress_weight, **kwargs)
 
 class CHGNetCalculator(_CHGNetCalculator):
