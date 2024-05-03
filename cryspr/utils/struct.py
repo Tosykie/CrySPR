@@ -109,10 +109,11 @@ def get_structure_from_pyxtal(
                 seed=random_seed,
             )
             cifname = "_".join([reduced_formula_refined,
-                                 full_formula,
-                                 f"{Z}fu",
-                                 ]
-                                )
+                                full_formula,
+                                f"{Z}fu",
+                                f"spg{space_group_number}",
+                                ]
+                               )
             if write_cif:
                 ciffile = "_".join([cif_prefix, cifname, cif_posfix]).strip("_") + ".cif"
                 pxstrc.to_file(filename= ciffile)
