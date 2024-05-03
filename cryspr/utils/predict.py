@@ -40,7 +40,7 @@ def random_predict(
         [
             f"[{now()}] CrySPR Info: Input chemical formula = {reduced_formula}.",
             f"Input Z_start = {Z_start}, Z_end = {Z_end}.",
-            f"Use ML-IAPs = {relax_calculator.__class__.__name__}",
+            f"Use ML-IAP = {relax_calculator.__class__.__name__}",
             f"Use local optimization algorithm = {optimizer.__class__.__name__}",
             f"Use fmax = {fmax}",
             f"\n",
