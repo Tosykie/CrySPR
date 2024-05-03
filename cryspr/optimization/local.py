@@ -18,8 +18,20 @@ from ase.optimize.optimize import Optimizer
 from ase.optimize import FIRE, LBFGS, BFGSLineSearch
 from ase.io import read, write
 from ase.spacegroup import get_spacegroup
+
+from pymatgen.core.composition import Composition
 from pymatgen.io.ase import AseAtomsAdaptor
+from pymatgen.core.lattice import Lattice as PgLattice
+from pymatgen.symmetry.groups import SpaceGroup
+from pymatgen.symmetry.groups import sg_symbol_from_int_number
+
+from pyxtal import pyxtal
+from pyxtal.symmetry import Group
+from pyxtal.tolerance import Tol_matrix
+from pyxtal.lattice import Lattice as PxLattice
+
 from ..utils.log import now
+from ..utils.struct import get_crystal_system_from_lattice
 
 def run_ase_relaxer(
         atoms_in: Atoms,
@@ -50,12 +62,12 @@ def run_ase_relaxer(
 
     E0 = atoms.get_potential_energy()
     logcontent1 = "\n".join([
-                f"[{now()}] Info: Start structure relaxation.",
-                f"[{now()}] Info: Total energy for initial input = {E0:12.5f} eV",
-                f"[{now()}] Info: Initial symmetry {spg0.symbol} ({spg0.no})",
-                f"[{now()}] Info: Symmetry constraint? {'Yes' if fix_symmetry else 'No'}",
-                f"[{now()}] Info: Relax cell? {'Yes' if cell_filter is not None else 'No'}",
-                f"[{now()}] Info: Relax atomic postions? {'Yes' if not fix_fractional else 'No'}",
+                f"[{now()}] CrySPR Info: Start structure relaxation.",
+                f"[{now()}] CrySPR Info: Total energy for initial input = {E0:12.5f} eV",
+                f"[{now()}] CrySPR Info: Initial symmetry {spg0.symbol} ({spg0.no})",
+                f"[{now()}] CrySPR Info: Symmetry constraint? {'Yes' if fix_symmetry else 'No'}",
+                f"[{now()}] CrySPR Info: Relax cell? {'Yes' if cell_filter is not None else 'No'}",
+                f"[{now()}] CrySPR Info: Relax atomic postions? {'Yes' if not fix_fractional else 'No'}",
                 f"#{'-'*60}#",
                 f"\n",
             ])
@@ -85,9 +97,9 @@ def run_ase_relaxer(
 
     logcontent2 = "\n".join([
                 f"#{'-' * 60}#",
-                f"[{now()}] Info: End structure relaxation.",
-                f"[{now()}] Info: Total energy for final structure = {E1:12.5f} eV",
-                f"[{now()}] Info: Final symmetry {spg1.symbol} ({spg1.no})",
+                f"[{now()}] CrySPR Info: End structure relaxation.",
+                f"[{now()}] CrySPR Info: Total energy for final structure = {E1:12.5f} eV",
+                f"[{now()}] CrySPR Info: Final symmetry {spg1.symbol} ({spg1.no})",
                 f"Optimized Cell: {atoms.cell.cellpar()}",
                 f"Cell diff (%): {cell_diff}",
                 f"Scaled positions:\n{atoms.get_scaled_positions()}",
@@ -173,3 +185,113 @@ def stepwise_relax(
     _ = structure2.to(filename=f'{wdir}/{reduced_formula}_{full_formula}_2_cell+pos_symmetrized.cif', symprec=1e-3)
 
     return atoms2
+
+def structure_from_one_formula_one_spg(
+        full_formula: str,
+        space_group_number: int,
+        lattice_parameters: list[float, float, float, float, float, float] = None,
+        inter_dist_matx: Tol_matrix = None,
+        random_seed = None,
+        max_try: int = 20,
+        verbose: bool = True,
+        logfile: str = "-",
+        write_cif: bool = False,
+        cif_prefix: str = "",
+        cif_posfix: str = "",
+) -> dict:
+    """Relax and get the total energy for single formula with one specific space group"""
+
+    if lattice_parameters is None:
+        inter_dist_matx = Tol_matrix(prototype="atomic", factor=1.25)
+    else:
+        content = (f"[{now()}] CrySPR Warning: Ignore the default inter-atomic distance matrix,"
+                   f" use instead input lattice parameters.\n")
+        if verbose:
+            print(content)
+        if logfile != "-":
+            with open(logfile, mode='at') as f:
+                f.write(content)
+    spg_int_symbol = sg_symbol_from_int_number(space_group_number)
+    space_group = SpaceGroup(spg_int_symbol)
+    crystal_system = space_group.crystal_system
+    ltype = crystal_system
+
+    # Check if the lattice parameters are compatible with the space group
+    if lattice_parameters is not None:
+        pg_lattice = PgLattice.from_parameters(*lattice_parameters)
+        ltype_para = get_crystal_system_from_lattice(pg_lattice)
+        if ltype_para.lower() != ltype.lower():
+            content = (f"[{now()}] CrySPR Error: Lattice type with parameters {lattice_parameters} ({ltype_para})"
+                       f" is incompatible with the space group {ltype}!\n")
+            if verbose:
+                print(content)
+            if logfile != "-":
+                with open(logfile, mode='at') as f:
+                    f.write(content)
+            exit(code=7)
+        else:
+            px_lattice = PxLattice.from_para(*lattice_parameters, ltype=ltype)
+
+    # formulae enumeration
+    full_composition: Composition = Composition(full_formula)
+    full_formula: str = full_composition.formula.replace(" ", "")
+    reduced_formula_refined, Z_in_full_formula = full_composition.get_reduced_formula_and_factor()
+    ions_and_numbers: dict = full_composition.get_el_amt_dict()
+    number_of_ions = [int(f) for f in list(ions_and_numbers.values())]
+    species = list(ions_and_numbers.keys())
+
+    pxstrc = pyxtal()
+    try:
+        pxstrc.from_random(
+            dim=3,
+            group=space_group_number,
+            species=species,
+            lattice=None if lattice_parameters is None else px_lattice,
+            sites=None,
+            numIons=number_of_ions,
+            tm=inter_dist_matx,
+            max_count=max_try,
+            seed=random_seed,
+        )
+        cifname = "_".join([reduced_formula_refined,
+                            full_formula,
+                            f"{Z_in_full_formula}fu",
+                            f"spg{space_group_number}",
+                            ]
+                           )
+        if write_cif:
+            ciffile = "_".join([cif_prefix, cifname, cif_posfix]).strip("_") + ".cif"
+            pxstrc.to_file(filename= ciffile)
+        strc_ase = pxstrc.to_ase()
+        pxstrc_dict = {
+            "full_formula": full_formula,
+            "pyxtal": pxstrc,
+            "ase_Atoms": strc_ase,
+        }
+        DoF_total = pxstrc.get_dof()
+        DoF_lattice = pxstrc.lattice.dof
+        DoF_postions = DoF_total - DoF_lattice
+
+        content = "\n".join(
+            [
+                f"[{now()}] CrySPR Info: Successfully generated structure for {full_formula}",
+                f"[{now()}] CrySPR Info: Degree of freedom: total = {DoF_total}, lattice = {DoF_lattice}, postions = {DoF_postions}",
+                f"[{now()}] CrySPR Info: pyxtal representation:\n{pxstrc}",
+                f"\n"
+            ]
+        )
+        if verbose:
+            print(content)
+        if logfile != "-":
+            with open(logfile, mode='at') as f:
+                f.write(content)
+
+    except Exception as e:
+        content = f"[{now()}] CrySPR Error: Pyxtal exception occurred:\n{e}\n"
+        if verbose:
+            print(content)
+        if logfile != "-":
+            with open(logfile, mode='at') as f:
+                f.write(content)
+
+    return pxstrc_dict
