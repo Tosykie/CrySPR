@@ -87,7 +87,7 @@ def run_ase_relaxer(
               format="cif",
               )
     else:
-        write(filename=f'{wdir}/{reduced_formula}_{full_formula}_free.cif',
+        write(filename=f'{wdir}/{reduced_formula}_{full_formula}_cell+pos.cif',
               images=atoms,
               format="cif",
               )
