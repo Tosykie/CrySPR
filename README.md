@@ -34,5 +34,9 @@ At present, just to add the CrySPR project into the system PYTHONPATH.
 
 ## Examples
 
-### CaTiO3 (Pnma)
+### Ground-state CaTiO3
+
+See [`examples/cryspr_random_predict_CaTiO3.ipynb`](https://github.com/Tosykie/CrySPR/blob/main/examples/cryspr_random_predict_CaTiO3.ipynb)
+
+
 
