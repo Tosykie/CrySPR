@@ -14,6 +14,7 @@ from pymatgen.core.composition import Composition
 
 from pyxtal.symmetry import Group
 
+#To-Do: prediction mode: 1) random; 2) sequential enumeration; 3) PSO/BO
 def random_predict(
         reduced_formula: str,
         Z_start: int,
