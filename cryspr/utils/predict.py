@@ -149,11 +149,12 @@ def random_predict(
             count = 1
             trial_structure_for_each_spg = []
             while count <= n_trial_each_space_group:
+                destination = f"{wdir}/{Z}fu/spg{spg}/trial{count}"
                 output = one_structure_from_one_formula_one_spg(
                     full_formula=full_formula_in,
                     space_group_number=spg,
                     random_seed=None,
-                    wdir=f"{wdir}/{Z}fu/spg{spg}/trial{count}",
+                    wdir=destination,
                     logfile=logfile,
                     write_cif=write_cif,
                     cif_prefix=cif_prefix,
@@ -163,6 +164,8 @@ def random_predict(
                 content = "\n".join(
                     [
                         f"[{now()}] CrySPR Info: Done structure generation: trial {count}.",
+                        f"[{now()}] CrySPR Info: Logs and structure files in {destination}",
+                        f"[{now()}] CrySPR Info: Starting structure relaxation ...",
                         f"\n",
                     ]
                 )
@@ -179,7 +182,7 @@ def random_predict(
                     calculator=relax_calculator,
                     optimizer=optimizer,
                     fmax=fmax,
-                    wdir=f"{wdir}/{Z}fu/spg{spg}/trial{count}",
+                    wdir=destination,
                     logfile_prefix=relax_logfile_prefix,
                     logfile_postfix=relax_logfile_postfix,
                 )
@@ -189,6 +192,7 @@ def random_predict(
                 content = "\n".join(
                     [
                         f"[{now()}] CrySPR Info: Done structure relaxation: trial {count}.",
+                        f"[{now()}] CrySPR Info: Logs and structure files in {destination}",
                         f"\n",
                     ]
                 )
