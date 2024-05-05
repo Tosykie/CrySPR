@@ -26,9 +26,17 @@ scikit-opt # https://scikit-opt.github.io/scikit-opt/#/en/README?id=install
 
 ## Installation
 
-To be updated through pyproject.
+### PyPI distribution
 
-At present, just to add the CrySPR project into the system PYTHONPATH either by, e.g., on Linux/Mac OS
+```bash
+$ pip install cryspr
+```
+
+### Source code (GitHub)
+
+1. Download the repo or git clone.
+
+2. Add the CrySPR project into the system PYTHONPATH either by, e.g., on Linux/Mac OS
 
 ```bash
 $ export PYTHONPATH=/path/to/CrySPR:$PYTHONPATH
@@ -45,7 +53,7 @@ sys.path.insert(0, '/path/to/CrySPR')
 
 ## Usage
 
-To be updated
+To be updated.
 
 
 
@@ -53,7 +61,9 @@ To be updated
 
 ### Ground-state CaTiO3
 
-See [`examples/cryspr_random_predict_CaTiO3.ipynb`](https://github.com/Tosykie/CrySPR/blob/main/examples/cryspr_random_predict_CaTiO3.ipynb)
+This example shows the implementation of crystal structure relaxation and prediction from three test space groups (No. 62, 74, 140) through a random prediction mode. The ML-IAP calculator is CHGNet.
+
+Refers to [`examples/cryspr_random_predict_CaTiO3.ipynb`](https://github.com/Tosykie/CrySPR/blob/main/examples/cryspr_random_predict_CaTiO3.ipynb)
 
 
 
