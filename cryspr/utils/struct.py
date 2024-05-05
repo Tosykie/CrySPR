@@ -87,6 +87,8 @@ def get_structure_from_pyxtal(
                 f.write(content)
 
     # dict with Z as the key
+    if Z_end < Z_start:
+        Z_end = Z_start
     pxstrc_with_Z: dict = {}
     for Z in range(Z_start, Z_end+1):
         full_composition: Composition = composition_in.reduced_composition * Z
