@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cryspr"
+version = "0.0.1"
+description = "Python implementation of crystal structure pre-relaxation and predcition (CrySPR)."
+authors = [
+    {name = "Wei Nong", email = "nw2y47@outlook.com"},
+    {name = "Ruiming Zhu", email = "raymond_zhurm@outlook.com"},
+    {name = "Kedar Hippalgaonkar", email = "kedar@ntu.edu.sg"},
+]
+maintainers = [
+    {name = "Wei Nong", email = "nw2y47@outlook.com"},
+    {name = "Ruiming Zhu", email = "raymond_zhurm@outlook.com"},
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+    ]
+
+requires-python = ">=3.9"
+dependencies = [
+    "ase",
+    "pymatgen",
+    "pyxtal",
+    "torch",
+    "matgl",
+    "chgnet",
+    "mace-torch",
+    "scikit-opt",
+]
+
+[tool.setuptools]
+packages = [
+    "cryspr",
+    "cryspr.calculators",
+    "cryspr.optimization",
+    "cryspr.utils",
+#    "cryspr.wycryst",
+]
+
+[project.urls]
+Homepage = "https://github.com/Tosykie/CrySPR"
+Issues = "https://github.com/Tosykie/CrySPR/issues"
