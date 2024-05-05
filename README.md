@@ -1,6 +1,8 @@
 # CrySPR
 
-CrySPR /ˈkrɪspɚ/ is a Python interface for crystal structure pre-relaxation and prediction using machine-learning interatomic potentials (ML-IAPs). Features include:
+**Maintainers**: [Wei Nong](https://github.com/Tosykie) [email: nw2y47@outlool.com] ; [Ruiming Zhu](https://github.com/RaymondZhurm) [email: raymond_zhurm@outlook.com]
+
+**CrySPR** /ˈkrɪspɚ/ is a Python interface for crystal structure pre-relaxation and prediction using machine-learning interatomic potentials (ML-IAPs). Features include:
 
 - Implement structure generation from the input info (e.g., formula, Z, space group, etc.)  via `pyxtal` and local structure optimization/relaxation through `ase` calculator using ML-IAPs;
 - Implement global search task for crystal structure prediction using 1) random search (done), and 2) particle swarm optimization (PSO) for a given reduced formula (in dev ...);
