@@ -100,7 +100,7 @@ def random_predict(
             compatible_wyckoff_combinations: list = spg.list_wyckoff_combinations(number_of_ions)[0]
             if len(compatible_wyckoff_combinations) > 0:
                 compatible_spg.append(spg_num)
-                compatible_spg_with_sites[spg] = compatible_wyckoff_combinations
+                compatible_spg_with_sites[spg_num] = compatible_wyckoff_combinations
                 # log
                 number_of_solutions = len(compatible_wyckoff_combinations)
                 content = "\n".join(
@@ -150,14 +150,16 @@ def random_predict(
         sys.exit(7)
 
     # Write header of summary csv
-    with open(f"{wdir}/summary_{reduced_formula_refined}.csv", mode='wt+') as f:
+    if not os.path.exists(wdir):
+        os.makedirs(wdir)
+    with open(f"{wdir}/summary_{reduced_formula_refined}.csv", mode='wt') as f:
         f.write(
             ",".join(
                 [
                     "Z",            "SpaceGroupNumber",       "TrialNumber",
                     "WyckoffSites", "SitesCombinationNumber", "EnergyPerAtom",
                 ]
-            )
+            ) + "\n"
         )
     # Generate n_trial_each_space_group structure for each compatible space group
     reservoir: dict = compatible_spg_with_Z.copy()
@@ -168,12 +170,12 @@ def random_predict(
         spg_trial_comb_atoms = {}  # {spg: {trial: {WyckoffCombination: Atoms}}}
         for spg in spgs:
             count_spg = 1
+            spg_trial_comb_atoms[spg] = {}
             while count_spg <= n_trial_each_space_group:
                 count_sites_comb = 1
                 compatible_wyckoff_combinations: list = compatible_spg_with_sites[spg]
                 n_combinations = len(compatible_wyckoff_combinations)
-                relaxd_strcs_for_each_sites_comb = []
-
+                spg_trial_comb_atoms[spg][f"trail{count_spg}"] = {}
                 # Enumerate the compatible combinations of Wyckoff sites
                 while count_sites_comb <= n_trail_sites_combination:
                     destination = f"{wdir}/{Z}fu/spg{spg}/trial{count_spg}/sites_combination{count_sites_comb}"
@@ -222,7 +224,9 @@ def random_predict(
                         logfile_prefix=relax_logfile_prefix,
                         logfile_postfix=relax_logfile_postfix,
                     )
-                    relaxd_strcs_for_each_sites_comb.append(atoms_relaxd)
+                    energy_per_atom = atoms_relaxd.get_potential_energy() / len(atoms_relaxd)
+                    spg_trial_comb_atoms[spg][f"trail{count_spg}"][f"sites_combination{count_sites_comb}"] = atoms_relaxd
+
 
                     # log
                     content = "\n".join(
@@ -239,20 +243,18 @@ def random_predict(
                         with open(logfile, mode='at') as f:
                             f.write(content)
 
-
-                    energy_per_atom = atoms_relaxd.get_potential_energy()/ len(atoms_relaxd)
                     # Write content of summary csv
-                    with open(f"{wdir}/summary_{reduced_formula_refined}.csv", mode='awt+') as f:
+                    with open(f"{wdir}/summary_{reduced_formula_refined}.csv", mode='at') as f:
                         f.write(
                             ",".join(
                                 [
                                     f"{Z}", f"{spg}", f"{count_spg}",
-                                    f"{Wyckoff_sites}", f"{count_sites_comb}", f"{energy_per_atom}",
+                                    f"\"{Wyckoff_sites}\"", f"{count_sites_comb}", f"{energy_per_atom}",
                                 ]
-                            )
+                            ) + "\n"
                         )
                     count_sites_comb += 1 # count up!
-                    spg_trial_comb_atoms[spg][f"trail{count_spg}"][f"sites_combination{count_sites_comb}"] = atoms_relaxd
+
                 count_spg += 1 # count up!
 
             # Update the dict to {Z: {spg: {trial: {WyckoffCombination: Atoms}}}}
