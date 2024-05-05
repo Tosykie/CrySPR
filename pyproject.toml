@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cryspr"
-version = "0.0.1"
+version = "0.0.1.0"
 description = "Python implementation of crystal structure pre-relaxation and predcition (CrySPR)."
 authors = [
     {name = "Wei Nong", email = "nw2y47@outlook.com"},
