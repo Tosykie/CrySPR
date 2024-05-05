@@ -1,6 +1,6 @@
 # CrySPR
 
-**Maintainers**: [Wei Nong](https://github.com/Tosykie) [email: nw2y47@outlool.com] ; [Ruiming Zhu](https://github.com/RaymondZhurm) [email: raymond_zhurm@outlook.com]
+**Maintainers**: [Wei Nong](https://github.com/Tosykie) [email: nw2y47@outlook.com] ; [Ruiming Zhu](https://github.com/RaymondZhurm) [email: raymond_zhurm@outlook.com]
 
 **CrySPR** /ˈkrɪspɚ/ is a Python interface for crystal structure pre-relaxation and prediction using machine-learning interatomic potentials (ML-IAPs). Features include:
 
