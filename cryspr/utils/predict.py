@@ -131,7 +131,10 @@ def random_predict(
                         f.write(content)
                 continue
         #
-        compatible_spg_with_Z[Z] = [full_formula, compatible_spg_with_sites]
+        if len(compatible_spg_with_sites) > 0:
+            compatible_spg_with_Z[Z] = [full_formula, compatible_spg_with_sites]
+        else:
+            pass
 
     if len(compatible_spg_with_Z) == 0:
         content = "\n".join(
