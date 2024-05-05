@@ -51,7 +51,7 @@ def run_ase_relaxer(
     atoms = atoms_in.copy()
     full_formula = atoms.get_chemical_formula(mode="metal")
     reduced_formula = atoms.get_chemical_formula(mode="metal", empirical=True)
-    atoms.set_calculator(calculator)
+    atoms.calc = calculator
     if fix_fractional:
         atoms.set_constraint([FixAtoms(indices=[atom.index for atom in atoms])])
     spg0 = get_spacegroup(atoms, symprec=1e-3)
