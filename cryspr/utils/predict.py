@@ -45,7 +45,7 @@ def random_predict(
             f"Input Z_start = {Z_start}, Z_end = {Z_end}.",
             f"Input space groups = {space_group_numbers}",
             f"Number of trails for each space group = {n_trial_each_space_group}",
-            f"Number of trail combinations of Wyckoff sites {n_trail_sites_combination}",
+            f"Number of trail combinations of Wyckoff sites = {n_trail_sites_combination}",
             f"Sequentially enumerate compatible combinations of Wyckoff sites? {'Yes' if sequentially_enumerate_sites_combination else 'No'}",
             f"Use ML-IAP = {relax_calculator.__class__.__name__}",
             f"Use local optimization algorithm = {optimizer.__name__}",
