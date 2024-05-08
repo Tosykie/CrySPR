@@ -1,4 +1,3 @@
-python >= 3.9
 ase # https://wiki.fysik.dtu.dk/ase/install.html
 pymatgen # https://pymatgen.org/installation.html
 pyxtal # https://pyxtal.readthedocs.io/en/latest/Installation.html#installation
