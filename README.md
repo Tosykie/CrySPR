@@ -17,7 +17,7 @@ python >= 3.9
 ase # https://wiki.fysik.dtu.dk/ase/install.html
 pymatgen # https://pymatgen.org/installation.html
 pyxtal # https://pyxtal.readthedocs.io/en/latest/Installation.html#installation
-torch # https://pytorch.org/get-started/locally/#linux-installation
+torch <=2.2.1 # as required by matgl. https://pytorch.org/get-started/locally/#linux-installation
 matgl # https://matgl.ai/#installation
 chgnet # https://chgnet.lbl.gov/#installation
 mace-torch # https://mace-docs.readthedocs.io/en/latest/guide/installation.html
