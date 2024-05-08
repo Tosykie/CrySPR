@@ -17,7 +17,7 @@ python >= 3.9
 ase # https://wiki.fysik.dtu.dk/ase/install.html
 pymatgen # https://pymatgen.org/installation.html
 pyxtal # https://pyxtal.readthedocs.io/en/latest/Installation.html#installation
-torch <=2.2.1 # as required by matgl. https://pytorch.org/get-started/locally/#linux-installation
+torch # https://pytorch.org/get-started/locally/#linux-installation
 matgl # https://matgl.ai/#installation
 chgnet # https://chgnet.lbl.gov/#installation
 mace-torch # https://mace-docs.readthedocs.io/en/latest/guide/installation.html
@@ -33,6 +33,11 @@ scikit-opt # https://scikit-opt.github.io/scikit-opt/#/en/README?id=install
 ```bash
 $ pip install cryspr
 ```
+
+Note on the installation of `matgl (1.0.0)` library:
+
+- **Windows OS**: `pip install cryspr` will normally install all related dependencies, and the `matgl ` works for latest version of torch (as-of-date is 2.3.0)
+- **Linux OS**: the `matgl` requires `torch<=2.2.1` and additionally  `pydantic`, which is not well handled by pip. The two dependencies have to be manually installed using `pip`, or to install `matgl` using other package manager, like, `conda`. 
 
 ### Source code (GitHub)
 
