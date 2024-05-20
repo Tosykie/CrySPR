@@ -195,6 +195,7 @@ def random_predict(
                         space_group_number=spg,
                         assign_Wyckoff_sites=Wyckoff_sites,
                         random_seed=None,
+                        verbose=verbose,
                         wdir=destination,
                         logfile=logfile,
                         write_cif=write_cif,
